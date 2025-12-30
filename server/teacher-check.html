@@ -448,6 +448,14 @@
 
         // 提取关键信息
         function extractInfo(ocrResult) {
+            // 豆包API直接返回解析结果
+            if (ocrResult.extracted) {
+                return {
+                    rawText: ocrResult.words_result?.map(r => r.words).join('\n') || '',
+                    ...ocrResult.extracted
+                };
+            }
+
             const allText = ocrResult.words_result ?
                 ocrResult.words_result.map(r => r.words).join('\n') :
                 ocrResult.words_result_alt || '';
