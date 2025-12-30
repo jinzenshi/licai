@@ -222,16 +222,19 @@
             let html = '';
             pass.forEach(r => {
                 if (r.match && r.match.data) {
+                    // 优先显示库中的姓名，如果没有则显示豆包识别的姓名
+                    const name = r.match.data.姓名 || r.name || '';
                     html += `
                         <div class="result-item">
-                            <span class="result-name result-pass">✅ ${r.match.data.姓名}</span>
+                            <span class="result-name result-pass">✅ ${name}</span>
                             <span class="result-id">${r.idNumber} - ${r.match.data.资格种类} - ${r.match.data.任教学科}</span>
                         </div>
                     `;
                 }
             });
             fail.forEach(r => {
-                const name = r.match && r.match.name ? r.match.name : '';
+                // 优先使用豆包识别的姓名，其次使用match中的姓名
+                const name = r.name || (r.match && r.match.name) || '';
                 const reason = r.match && r.match.reason ? r.match.reason : '未识别到身份证号';
                 let detail = r.idNumber || '未知';
                 if (r.qualificationType) detail += ` (识:${r.qualificationType}${r.subject ? '-' + r.subject : ''})`;

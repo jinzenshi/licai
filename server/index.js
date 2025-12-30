@@ -109,7 +109,7 @@ const server = http.createServer(async (req, res) => {
         const { image } = JSON.parse(body);
         if (!image) throw new Error('缺少图片数据');
 
-        // 调用豆包API（提取身份证号、资格种类、任教学科）
+        // 调用豆包API（提取姓名、身份证号、资格种类、任教学科）
         const response = await fetch(DOUBAO_ENDPOINT, {
           method: 'POST',
           headers: {
@@ -118,14 +118,14 @@ const server = http.createServer(async (req, res) => {
           },
           body: JSON.stringify({
             model: DOUBAO_MODEL,
-            max_tokens: 80,
+            max_tokens: 100,
             temperature: 0.1,
             messages: [
               {
                 role: 'user',
                 content: [
                   { type: 'image_url', image_url: { url: `data:image/jpeg;base64,${image}` } },
-                  { type: 'text', text: '从图片提取信息，只返回JSON：{"idNumber":"身份证号18位","qualificationType":"资格种类(高级中学/中等职业学校/初级中学/小学/幼儿园)","subject":"任教学科(如语文/数学/英语等)"}。如果某项未识别到，值设为空字符串。只返回JSON。' }
+                  { type: 'text', text: '从图片提取信息，只返回JSON：{"name":"姓名","idNumber":"身份证号18位","qualificationType":"资格种类(高级中学/中等职业学校/初级中学/小学/幼儿园)","subject":"任教学科(如语文/数学/英语等)"}。如果某项未识别到，值设为空字符串。只返回JSON。' }
                 ]
               }
             ]
@@ -140,11 +140,12 @@ const server = http.createServer(async (req, res) => {
 
         // 解析豆包返回的JSON
         const content = data.choices?.[0]?.message?.content || '';
-        let ocrData = { idNumber: '', qualificationType: '', subject: '' };
+        let ocrData = { name: '', idNumber: '', qualificationType: '', subject: '' };
         try {
           const jsonMatch = content.match(/\{[\s\S]*\}/);
           if (jsonMatch) {
             const parsed = JSON.parse(jsonMatch[0]);
+            ocrData.name = parsed.name || '';
             ocrData.idNumber = parsed.idNumber || '';
             ocrData.qualificationType = parsed.qualificationType || '';
             ocrData.subject = parsed.subject || '';
@@ -164,6 +165,7 @@ const server = http.createServer(async (req, res) => {
 
         res.writeHead(200, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({
+          name: ocrData.name,
           idNumber: ocrData.idNumber,
           qualificationType: ocrData.qualificationType,
           subject: ocrData.subject,
@@ -177,7 +179,7 @@ const server = http.createServer(async (req, res) => {
               确认点: match['确认点'],
               终审注册状态: match['终审注册状态']
             }
-          } : match === null ? { found: false, reason: '该身份证号不在库中', name: '' } : { found: false, reason: match.reason, name: match['姓名'] || '' }
+          } : match === null ? { found: false, reason: '该身份证号不在库中', name: ocrData.name || '' } : { found: false, reason: match.reason, name: match['姓名'] || ocrData.name || '' }
         }));
       } catch (error) {
         res.writeHead(500, { 'Content-Type': 'application/json' });
