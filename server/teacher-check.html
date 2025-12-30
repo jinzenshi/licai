@@ -196,8 +196,19 @@
 
         function showResults() {
             resultBox.classList.remove('hidden');
-            const pass = results.filter(r => r.match && r.match.found);
-            const fail = results.filter(r => !r.match || !r.match.found);
+
+            // 去重：根据身份证号只保留第一条记录
+            const seen = new Set();
+            const uniqueResults = [];
+            results.forEach(r => {
+                if (r.idNumber && !seen.has(r.idNumber)) {
+                    seen.add(r.idNumber);
+                    uniqueResults.push(r);
+                }
+            });
+
+            const pass = uniqueResults.filter(r => r.match && r.match.found);
+            const fail = uniqueResults.filter(r => !r.match || !r.match.found);
 
             passCountSpan.textContent = pass.length;
             failCountSpan.textContent = fail.length;
