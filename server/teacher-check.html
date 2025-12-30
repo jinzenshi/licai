@@ -11,129 +11,55 @@
             background: #1a1a2e;
             color: #fff;
             min-height: 100vh;
-            overflow-x: hidden;
         }
-        .container {
-            padding: 15px;
-            max-width: 500px;
-            margin: 0 auto;
-        }
-        h1 {
-            text-align: center;
-            font-size: 18px;
-            margin-bottom: 10px;
-            color: #eee;
-        }
+        .container { padding: 15px; max-width: 500px; margin: 0 auto; }
+        h1 { text-align: center; font-size: 18px; margin-bottom: 10px; color: #eee; }
         .status-bar {
-            background: #16213e;
-            border-radius: 8px;
-            padding: 10px 12px;
-            margin-bottom: 10px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 13px;
+            background: #16213e; border-radius: 8px; padding: 10px 12px; margin-bottom: 10px;
+            display: flex; align-items: center; gap: 8px; font-size: 13px;
         }
-        .status-dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background: #666;
-        }
+        .status-dot { width: 8px; height: 8px; border-radius: 50%; background: #666; }
         .status-dot.ready { background: #4ade80; }
-        .status-dot.scanning { background: #facc15; animation: pulse 0.5s infinite; }
+        .status-dot.scanning { background: #facc15; animation: pulse 0.3s infinite; }
         .status-dot.success { background: #4ade80; }
-        .status-dot.error { background: #ef4444; }
         @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
         .camera-box {
-            position: relative;
-            width: 100%;
-            aspect-ratio: 4/3;
-            background: #000;
-            border-radius: 10px;
-            overflow: hidden;
-            margin-bottom: 10px;
+            position: relative; width: 100%; aspect-ratio: 4/3; background: #000;
+            border-radius: 10px; overflow: hidden; margin-bottom: 10px;
         }
         #video { width: 100%; height: 100%; object-fit: cover; }
         #canvas { display: none; }
         .guide-frame {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 85%;
-            height: 55%;
-            border: 2px dashed rgba(255,255,255,0.4);
-            border-radius: 6px;
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            width: 85%; height: 55%; border: 2px dashed rgba(255,255,255,0.4); border-radius: 6px;
         }
         .guide-text {
-            position: absolute;
-            bottom: 10%;
-            left: 50%;
-            transform: translateX(-50%);
-            font-size: 11px;
-            color: rgba(255,255,255,0.6);
-            background: rgba(0,0,0,0.4);
-            padding: 4px 10px;
-            border-radius: 12px;
+            position: absolute; bottom: 10%; left: 50%; transform: translateX(-50%);
+            font-size: 11px; color: rgba(255,255,255,0.6); background: rgba(0,0,0,0.4);
+            padding: 4px 10px; border-radius: 12px;
         }
-        .count-info {
-            text-align: center;
-            font-size: 12px;
-            color: #9ca3af;
-            margin-bottom: 10px;
-        }
+        .count-info { text-align: center; font-size: 12px; color: #9ca3af; margin-bottom: 10px; }
         .btn {
-            width: 100%;
-            padding: 12px;
-            border: none;
-            border-radius: 8px;
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
-            background: #4f46e5;
-            color: #fff;
+            width: 100%; padding: 12px; border: none; border-radius: 8px;
+            font-size: 14px; font-weight: 600; cursor: pointer; background: #4f46e5; color: #fff;
         }
-        .btn:disabled { background: #666; cursor: not-allowed; }
         .result-box {
-            background: #16213e;
-            border-radius: 10px;
-            padding: 12px;
-            margin-top: 10px;
+            background: #16213e; border-radius: 10px; padding: 12px; margin-top: 10px;
         }
-        .result-title {
-            font-size: 12px;
-            color: #9ca3af;
-            margin-bottom: 8px;
-        }
+        .result-title { font-size: 12px; color: #9ca3af; margin-bottom: 8px; }
         .result-item {
-            display: flex;
-            justify-content: space-between;
-            padding: 6px 0;
-            border-bottom: 1px solid #2a3a5e;
-            font-size: 13px;
+            display: flex; justify-content: space-between; padding: 6px 0;
+            border-bottom: 1px solid #2a3a5e; font-size: 13px;
         }
         .result-item:last-child { border-bottom: none; }
         .result-label { color: #9ca3af; }
         .result-value { font-weight: 600; color: #fff; }
         .match-result {
-            margin-top: 10px;
-            padding: 10px;
-            border-radius: 6px;
-            text-align: center;
-            font-weight: 600;
-            font-size: 14px;
+            margin-top: 10px; padding: 10px; border-radius: 6px;
+            text-align: center; font-weight: 600; font-size: 14px;
         }
-        .match-found {
-            background: rgba(74, 222, 128, 0.15);
-            border: 1px solid #4ade80;
-            color: #4ade80;
-        }
-        .match-not-found {
-            background: rgba(239, 68, 68, 0.15);
-            border: 1px solid #ef4444;
-            color: #ef4444;
-        }
+        .match-found { background: rgba(74, 222, 128, 0.15); border: 1px solid #4ade80; color: #4ade80; }
+        .match-not-found { background: rgba(239, 68, 68, 0.15); border: 1px solid #ef4444; color: #ef4444; }
         .hidden { display: none !important; }
     </style>
 </head>
@@ -142,16 +68,16 @@
         <h1>教师资格证核查</h1>
         <div class="status-bar">
             <div class="status-dot" id="statusDot"></div>
-            <span id="statusText">请放入证书</span>
+            <span id="statusText">正在启动...</span>
         </div>
         <div class="camera-box">
-            <video id="video" autoplay playsinline></video>
+            <video id="video" autoplay playsinline muted></video>
             <div class="guide-frame"></div>
-            <div class="guide-text">将证书放入框内，自动识别</div>
+            <div class="guide-text">将证书放入框内</div>
         </div>
         <canvas id="canvas"></canvas>
         <div class="count-info">已核查: <span id="count">0</span> 人</div>
-        <button class="btn" id="resetBtn" onclick="resetResult()">重新核查</button>
+        <button class="btn" onclick="resetResult()">继续核查下一本</button>
 
         <div class="result-box hidden" id="resultBox">
             <div class="result-title">查询结果</div>
@@ -162,7 +88,7 @@
         const video = document.getElementById('video');
         const canvas = document.getElementById('canvas');
         const statusDot = document.getElementById('statusDot');
-        const statusText = document.getById('statusText');
+        const statusText = document.getElementById('statusText');
         const resultBox = document.getElementById('resultBox');
         const resultContent = document.getElementById('resultContent');
         const countSpan = document.getElementById('count');
@@ -170,130 +96,70 @@
         let isProcessing = false;
         let lastResult = null;
         let checkedCount = 0;
-        let stabilityTimer = null;
-        let lastFrameData = null;
-        let autoCaptureTimer = null;
+        let lastQueryId = '';
+        let lastQueryTime = 0;
+        let checkTimer = null;
 
-        // 初始化摄像头
         async function init() {
             try {
                 const stream = await navigator.mediaDevices.getUserMedia({
-                    video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 960 } }
+                    video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 960 } },
+                    audio: false
                 });
                 video.srcObject = stream;
                 updateStatus('ready', '请放入证书');
-                startStabilityCheck();
+                startVideoCheck();
             } catch (e) {
-                updateStatus('error', '无法访问摄像头');
+                console.error('Camera error:', e);
+                updateStatus('error', '无法访问摄像头: ' + e.message);
             }
         }
 
-        // 状态更新
         function updateStatus(status, text) {
             statusDot.className = 'status-dot ' + status;
             statusText.textContent = text;
         }
 
-        // 稳定检测
-        function startStabilityCheck() {
-            const ctx = canvas.getContext('2d');
-            const check = () => {
-                if (isProcessing || lastResult) {
-                    requestAnimationFrame(check);
-                    return;
-                }
+        function startVideoCheck() {
+            checkTimer = setInterval(async () => {
+                if (isProcessing || lastResult) return;
+                const now = Date.now();
+                if (now - lastQueryTime < 2000) return;
 
-                canvas.width = video.videoWidth;
-                canvas.height = video.videoHeight;
-                ctx.drawImage(video, 0, 0);
+                try {
+                    isProcessing = true;
+                    canvas.width = video.videoWidth;
+                    canvas.height = video.videoHeight;
+                    canvas.getContext('2d').drawImage(video, 0, 0);
+                    const imageBase64 = canvas.toDataURL('image/jpeg', 0.6).split(',')[1];
 
-                const currentData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-                const diff = compareFrames(lastFrameData, currentData);
+                    const res = await fetch('/api/query', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ image: imageBase64 })
+                    });
+                    const data = await res.json();
 
-                if (diff < 0.03 && lastFrameData !== null) {
-                    // 画面稳定，开始倒计时
-                    if (!autoCaptureTimer) {
-                        updateStatus('scanning', '正在识别...');
-                        let count = 1;
-                        autoCaptureTimer = setInterval(() => {
-                            if (isProcessing || lastResult) {
-                                clearInterval(autoCaptureTimer);
-                                autoCaptureTimer = null;
-                                return;
-                            }
-                            count--;
-                            if (count <= 0) {
-                                clearInterval(autoCaptureTimer);
-                                autoCaptureTimer = null;
-                                captureAndQuery();
-                            }
-                        }, 600);
+                    if (data.error) throw new Error(data.error);
+
+                    if (data.idNumber && data.idNumber !== lastQueryId) {
+                        lastQueryId = data.idNumber;
+                        lastQueryTime = now;
+                        lastResult = data;
+                        checkedCount++;
+                        countSpan.textContent = checkedCount;
+                        showResult(data);
+                        updateStatus('success', '识别完成');
                     }
-                } else {
-                    if (autoCaptureTimer) {
-                        clearInterval(autoCaptureTimer);
-                        autoCaptureTimer = null;
-                    }
-                }
+                } catch (e) {}
 
-                lastFrameData = currentData;
-                requestAnimationFrame(check);
-            };
-            check();
+                isProcessing = false;
+            }, 500);
         }
 
-        // 比较两帧差异
-        function compareFrames(f1, f2) {
-            if (!f1 || !f2 || f1.data.length !== f2.data.length) return 1;
-            let diff = 0;
-            const data1 = f1.data, data2 = f2.data;
-            for (let i = 0; i < data1.length; i += 16) {
-                diff += Math.abs(data1[i] - data2[i]);
-            }
-            return diff / (data1.length / 4) / 255;
-        }
-
-        // 拍照并查询
-        async function captureAndQuery() {
-            isProcessing = true;
-            updateStatus('scanning', '识别中...');
-
-            canvas.width = video.videoWidth;
-            canvas.height = video.videoHeight;
-            canvas.getContext('2d').drawImage(video, 0, 0);
-            const imageBase64 = canvas.toDataURL('image/jpeg', 0.7).split(',')[1];
-
-            try {
-                const res = await fetch('/api/query', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ image: imageBase64 })
-                });
-                const data = await res.json();
-
-                if (data.error) throw new Error(data.error);
-
-                lastResult = data;
-                checkedCount++;
-                countSpan.textContent = checkedCount;
-                showResult(data);
-                updateStatus('success', '识别完成');
-            } catch (e) {
-                updateStatus('ready', '识别失败，请重试');
-            }
-
-            isProcessing = false;
-        }
-
-        // 显示结果
         function showResult(data) {
             resultBox.classList.remove('hidden');
-            let html = `
-                <div class="result-item">
-                    <span class="result-label">身份证号</span>
-                    <span class="result-value">${data.idNumber || '未识别'}</span>
-                </div>
-            `;
+            let html = `<div class="result-item"><span class="result-label">身份证号</span><span class="result-value">${data.idNumber || '未识别'}</span></div>`;
 
             if (data.match.found) {
                 const m = data.match.data;
@@ -307,15 +173,14 @@
             } else {
                 html += `<div class="match-result match-not-found">⚠️ ${data.match.reason}</div>`;
             }
-
             resultContent.innerHTML = html;
         }
 
-        // 重置结果，继续核查
         function resetResult() {
             lastResult = null;
+            lastQueryId = '';
+            lastQueryTime = 0;
             resultBox.classList.add('hidden');
-            lastFrameData = null;
             updateStatus('ready', '请放入下一本证书');
         }
 
