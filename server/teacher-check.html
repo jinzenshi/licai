@@ -197,11 +197,17 @@
         function showResults() {
             resultBox.classList.remove('hidden');
 
-            // 去重：根据身份证号只保留第一条记录
+            // 去重：根据身份证号去重，保留第一条记录
             const seen = new Set();
             const uniqueResults = [];
             results.forEach(r => {
-                if (r.idNumber && !seen.has(r.idNumber)) {
+                // 如果没有身份证号，也保留（可能是识别失败的情况）
+                if (!r.idNumber) {
+                    uniqueResults.push(r);
+                    return;
+                }
+                // 有身份证号的去重
+                if (!seen.has(r.idNumber)) {
                     seen.add(r.idNumber);
                     uniqueResults.push(r);
                 }
