@@ -499,25 +499,32 @@
                 return { found: false, reason: '请先上传Excel文件' };
             }
 
-            // 查找匹配
+            // 查找匹配（忽略X大小写）
             const match = excelData.find(row => {
-                const excelId = String(row['证件号码'] || '').trim();
-                return excelId === extracted.idNumber;
+                const excelId = String(row['证件号码'] || '').trim().toUpperCase();
+                const queryId = (extracted.idNumber || '').toUpperCase();
+                return excelId === queryId;
             });
 
+
             if (!match) {
-                return { found: false, reason: '该身份证号不在库中' };
+                // 调试：显示Excel中的前几条身份证号
+                const sampleIds = excelData.slice(0, 5).map(r => String(r['证件号码'] || '').trim());
+                console.log('Excel中的身份证号样本:', sampleIds);
+                console.log('识别的身份证号:', extracted.idNumber);
+                return { found: false, reason: '该身份证号不在库中（请查看浏览器控制台）' };
             }
 
-            // 如果识别到了资格种类或学科，验证是否匹配
-            if (extracted.qualificationType && match['资格种类'] !== extracted.qualificationType) {
+            // 如果识别到了资格种类，验证是否匹配（允许部分匹配）
+            if (extracted.qualificationType && !match['资格种类'].includes(extracted.qualificationType) && !extracted.qualificationType.includes(match['资格种类'].replace('教师资格', ''))) {
                 return {
                     found: false,
                     reason: `资格种类不匹配：Excel为"${match['资格种类']}"，识别为"${extracted.qualificationType}"`
                 };
             }
 
-            if (extracted.subject && match['任教学科'] !== extracted.subject) {
+            // 任教学科匹配（允许部分匹配）
+            if (extracted.subject && !match['任教学科'].includes(extracted.subject) && !extracted.subject.includes(match['任教学科'])) {
                 return {
                     found: false,
                     reason: `任教学科不匹配：Excel为"${match['任教学科']}"，识别为"${extracted.subject}"`
