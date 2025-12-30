@@ -97,7 +97,6 @@
         let lastResult = null;
         let checkedCount = 0;
         let lastQueryId = '';
-        let lastQueryTime = 0;
         let checkTimer = null;
 
         async function init() {
@@ -123,8 +122,6 @@
         function startVideoCheck() {
             checkTimer = setInterval(async () => {
                 if (isProcessing || lastResult) return;
-                const now = Date.now();
-                if (now - lastQueryTime < 2000) return;
 
                 try {
                     isProcessing = true;
@@ -142,9 +139,9 @@
 
                     if (data.error) throw new Error(data.error);
 
+                    // 检测到新身份证号立即返回
                     if (data.idNumber && data.idNumber !== lastQueryId) {
                         lastQueryId = data.idNumber;
-                        lastQueryTime = now;
                         lastResult = data;
                         checkedCount++;
                         countSpan.textContent = checkedCount;
@@ -154,7 +151,7 @@
                 } catch (e) {}
 
                 isProcessing = false;
-            }, 500);
+            }, 300); // 每0.3秒检测一次
         }
 
         function showResult(data) {
@@ -179,7 +176,6 @@
         function resetResult() {
             lastResult = null;
             lastQueryId = '';
-            lastQueryTime = 0;
             resultBox.classList.add('hidden');
             updateStatus('ready', '请放入下一本证书');
         }

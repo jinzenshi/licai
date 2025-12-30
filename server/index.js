@@ -83,7 +83,7 @@ const server = http.createServer(async (req, res) => {
         const { image } = JSON.parse(body);
         if (!image) throw new Error('缺少图片数据');
 
-        // 调用豆包API（优化提示词，快速回答）
+        // 调用豆包API（优化：快速模式）
         const response = await fetch(DOUBAO_ENDPOINT, {
           method: 'POST',
           headers: {
@@ -92,14 +92,14 @@ const server = http.createServer(async (req, res) => {
           },
           body: JSON.stringify({
             model: DOUBAO_MODEL,
-            max_tokens: 100,
+            max_tokens: 50,
             temperature: 0.1,
             messages: [
               {
                 role: 'user',
                 content: [
                   { type: 'image_url', image_url: { url: `data:image/jpeg;base64,${image}` } },
-                  { type: 'text', text: '提取身份证号，只返回18位数字。' }
+                  { type: 'text', text: '提取身份证号，只返回18位数字，不要任何其他文字。' }
                 ]
               }
             ]
