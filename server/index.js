@@ -99,9 +99,9 @@ const server = http.createServer(async (req, res) => {
     return;
   }
 
-  // 静态文件 (静态文件在项目根目录)
+  // 静态文件 (在同一目录)
   let filePath = req.url === '/' ? '/teacher-check.html' : req.url;
-  const fullPath = path.resolve(__dirname, '..', filePath);
+  const fullPath = path.join(__dirname, filePath);
   serveStatic(req, res, fullPath);
 });
 
