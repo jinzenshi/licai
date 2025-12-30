@@ -12,7 +12,7 @@
             color: #fff;
             min-height: 100vh;
         }
-        .container { padding: 15px; max-width: 500px; margin: 0 auto; }
+        .container { padding: 15px; max-width: 600px; margin: 0 auto; }
         h1 { text-align: center; font-size: 18px; margin-bottom: 10px; color: #eee; }
         .status-bar {
             background: #16213e; border-radius: 8px; padding: 10px 12px; margin-bottom: 10px;
@@ -38,28 +38,37 @@
             font-size: 11px; color: rgba(255,255,255,0.6); background: rgba(0,0,0,0.4);
             padding: 4px 10px; border-radius: 12px;
         }
-        .count-info { text-align: center; font-size: 12px; color: #9ca3af; margin-bottom: 10px; }
+        .btn-row { display: flex; gap: 10px; margin-bottom: 10px; }
         .btn {
-            width: 100%; padding: 12px; border: none; border-radius: 8px;
-            font-size: 14px; font-weight: 600; cursor: pointer; background: #4f46e5; color: #fff;
+            flex: 1; padding: 12px; border: none; border-radius: 8px;
+            font-size: 14px; font-weight: 600; cursor: pointer;
         }
+        .btn-primary { background: #4f46e5; color: #fff; }
+        .btn-success { background: #059669; color: #fff; }
+        .btn-danger { background: #dc2626; color: #fff; }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .count-info { text-align: center; font-size: 12px; color: #9ca3af; margin-bottom: 10px; }
         .result-box {
             background: #16213e; border-radius: 10px; padding: 12px; margin-top: 10px;
         }
         .result-title { font-size: 12px; color: #9ca3af; margin-bottom: 8px; }
+        .stat-row { display: flex; gap: 10px; margin-bottom: 10px; }
+        .stat-item {
+            flex: 1; padding: 10px; border-radius: 6px; text-align: center;
+            font-size: 13px;
+        }
+        .stat-pass { background: rgba(74, 222, 128, 0.15); border: 1px solid #4ade80; }
+        .stat-fail { background: rgba(239, 68, 68, 0.15); border: 1px solid #ef4444; }
+        .stat-num { font-size: 20px; font-weight: 700; display: block; }
+        .result-list { max-height: 300px; overflow-y: auto; }
         .result-item {
-            display: flex; justify-content: space-between; padding: 6px 0;
-            border-bottom: 1px solid #2a3a5e; font-size: 13px;
+            padding: 8px; border-bottom: 1px solid #2a3a5e; font-size: 12px;
         }
         .result-item:last-child { border-bottom: none; }
-        .result-label { color: #9ca3af; }
-        .result-value { font-weight: 600; color: #fff; }
-        .match-result {
-            margin-top: 10px; padding: 10px; border-radius: 6px;
-            text-align: center; font-weight: 600; font-size: 14px;
-        }
-        .match-found { background: rgba(74, 222, 128, 0.15); border: 1px solid #4ade80; color: #4ade80; }
-        .match-not-found { background: rgba(239, 68, 68, 0.15); border: 1px solid #ef4444; color: #ef4444; }
+        .result-name { font-weight: 600; color: #fff; }
+        .result-id { color: #9ca3af; font-size: 11px; }
+        .result-pass { color: #4ade80; }
+        .result-fail { color: #ef4444; }
         .hidden { display: none !important; }
     </style>
 </head>
@@ -68,20 +77,31 @@
         <h1>教师资格证核查</h1>
         <div class="status-bar">
             <div class="status-dot" id="statusDot"></div>
-            <span id="statusText">正在启动...</span>
+            <span id="statusText">准备就绪</span>
         </div>
         <div class="camera-box">
             <video id="video" autoplay playsinline muted></video>
             <div class="guide-frame"></div>
-            <div class="guide-text">将证书放入框内</div>
+            <div class="guide-text">将证书放入框内拍照</div>
         </div>
         <canvas id="canvas"></canvas>
-        <div class="count-info">已核查: <span id="count">0</span> 人</div>
-        <button class="btn" onclick="resetResult()">继续核查下一本</button>
-
+        <div class="count-info">已收集: <span id="collected">0</span> | 待返回: <span id="pending">0</span></div>
+        <div class="btn-row">
+            <button class="btn btn-success" id="startBtn" onclick="startTask()">开始任务</button>
+            <button class="btn btn-primary" id="captureBtn" onclick="captureAndQuery()" disabled>拍照并收集</button>
+            <button class="btn btn-danger" id="endBtn" onclick="endTask()" disabled>结束任务</button>
+        </div>
         <div class="result-box hidden" id="resultBox">
-            <div class="result-title">查询结果</div>
-            <div class="result-content" id="resultContent"></div>
+            <div class="result-title">核查结果</div>
+            <div class="stat-row">
+                <div class="stat-item stat-pass">
+                    <span class="stat-num" id="passCount">0</span>通过
+                </div>
+                <div class="stat-item stat-fail">
+                    <span class="stat-num" id="failCount">0</span>未通过
+                </div>
+            </div>
+            <div class="result-list" id="resultList"></div>
         </div>
     </div>
     <script>
@@ -90,14 +110,18 @@
         const statusDot = document.getElementById('statusDot');
         const statusText = document.getElementById('statusText');
         const resultBox = document.getElementById('resultBox');
-        const resultContent = document.getElementById('resultContent');
-        const countSpan = document.getElementById('count');
+        const startBtn = document.getElementById('startBtn');
+        const captureBtn = document.getElementById('captureBtn');
+        const endBtn = document.getElementById('endBtn');
+        const collectedSpan = document.getElementById('collected');
+        const pendingSpan = document.getElementById('pending');
+        const passCountSpan = document.getElementById('passCount');
+        const failCountSpan = document.getElementById('failCount');
+        const resultList = document.getElementById('resultList');
 
-        let isProcessing = false;
-        let lastResult = null;
-        let checkedCount = 0;
-        let lastQueryId = '';
-        let checkTimer = null;
+        let taskActive = false;
+        let pendingQueries = [];
+        let results = [];
 
         async function init() {
             try {
@@ -106,11 +130,9 @@
                     audio: false
                 });
                 video.srcObject = stream;
-                updateStatus('ready', '请放入证书');
-                startVideoCheck();
+                updateStatus('ready', '请开始任务');
             } catch (e) {
-                console.error('Camera error:', e);
-                updateStatus('error', '无法访问摄像头: ' + e.message);
+                updateStatus('error', '无法访问摄像头');
             }
         }
 
@@ -119,65 +141,86 @@
             statusText.textContent = text;
         }
 
-        function startVideoCheck() {
-            checkTimer = setInterval(async () => {
-                if (isProcessing || lastResult) return;
-
-                try {
-                    isProcessing = true;
-                    canvas.width = video.videoWidth;
-                    canvas.height = video.videoHeight;
-                    canvas.getContext('2d').drawImage(video, 0, 0);
-                    const imageBase64 = canvas.toDataURL('image/jpeg', 0.6).split(',')[1];
-
-                    const res = await fetch('/api/query', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ image: imageBase64 })
-                    });
-                    const data = await res.json();
-
-                    if (data.error) throw new Error(data.error);
-
-                    // 检测到新身份证号立即返回
-                    if (data.idNumber && data.idNumber !== lastQueryId) {
-                        lastQueryId = data.idNumber;
-                        lastResult = data;
-                        checkedCount++;
-                        countSpan.textContent = checkedCount;
-                        showResult(data);
-                        updateStatus('success', '识别完成');
-                    }
-                } catch (e) {}
-
-                isProcessing = false;
-            }, 300); // 每0.3秒检测一次
-        }
-
-        function showResult(data) {
-            resultBox.classList.remove('hidden');
-            let html = `<div class="result-item"><span class="result-label">身份证号</span><span class="result-value">${data.idNumber || '未识别'}</span></div>`;
-
-            if (data.match.found) {
-                const m = data.match.data;
-                html += `
-                    <div class="result-item"><span class="result-label">姓名</span><span class="result-value">${m.姓名}</span></div>
-                    <div class="result-item"><span class="result-label">资格</span><span class="result-value">${m.资格种类}</span></div>
-                    <div class="result-item"><span class="result-label">学科</span><span class="result-value">${m.任教学科}</span></div>
-                    <div class="result-item"><span class="result-label">确认点</span><span class="result-value">${m.确认点}</span></div>
-                    <div class="match-result match-found">✅ ${m.终审注册状态}</div>
-                `;
-            } else {
-                html += `<div class="match-result match-not-found">⚠️ ${data.match.reason}</div>`;
-            }
-            resultContent.innerHTML = html;
-        }
-
-        function resetResult() {
-            lastResult = null;
-            lastQueryId = '';
+        function startTask() {
+            taskActive = true;
+            pendingQueries = [];
+            results = [];
+            startBtn.disabled = true;
+            captureBtn.disabled = false;
+            endBtn.disabled = false;
             resultBox.classList.add('hidden');
-            updateStatus('ready', '请放入下一本证书');
+            updateStatus('scanning', '任务进行中...');
+        }
+
+        function captureAndQuery() {
+            if (!taskActive) return;
+
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            canvas.getContext('2d').drawImage(video, 0, 0);
+            const imageBase64 = canvas.toDataURL('image/jpeg', 0.6).split(',')[1];
+
+            // 发送查询请求
+            const queryPromise = fetch('/api/query', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ image: imageBase64 })
+            }).then(res => res.json());
+
+            pendingQueries.push(queryPromise);
+            updatePendingCount();
+        }
+
+        function updatePendingCount() {
+            collectedSpan.textContent = results.length;
+            pendingSpan.textContent = pendingQueries.length;
+        }
+
+        async function endTask() {
+            taskActive = false;
+            captureBtn.disabled = true;
+            endBtn.disabled = true;
+            startBtn.disabled = false;
+            updateStatus('scanning', '等待返回结果...');
+
+            // 等待所有请求完成
+            const allResults = await Promise.all(pendingQueries);
+
+            // 收集结果
+            results = allResults.filter(r => r && r.idNumber);
+
+            showResults();
+            updatePendingCount();
+            updateStatus('success', '任务完成');
+        }
+
+        function showResults() {
+            resultBox.classList.remove('hidden');
+            const pass = results.filter(r => r.match && r.match.found);
+            const fail = results.filter(r => !r.match || !r.match.found);
+
+            passCountSpan.textContent = pass.length;
+            failCountSpan.textContent = fail.length;
+
+            let html = '';
+            pass.forEach(r => {
+                html += `
+                    <div class="result-item">
+                        <span class="result-name result-pass">✅ ${r.match.data.姓名}</span>
+                        <span class="result-id">${r.idNumber} - ${r.match.data.资格种类}</span>
+                    </div>
+                `;
+            });
+            fail.forEach(r => {
+                const reason = r.match ? r.match.reason : '未识别到身份证号';
+                html += `
+                    <div class="result-item">
+                        <span class="result-name result-fail">❌ ${reason}</span>
+                        <span class="result-id">${r.idNumber || '未知'}</span>
+                    </div>
+                `;
+            });
+            resultList.innerHTML = html;
         }
 
         init();
