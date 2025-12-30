@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>教师资格证核查</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #1a1a2e;
+            color: #fff;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .container {
+            padding: 20px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 20px;
+            margin-bottom: 15px;
+            color: #eee;
+        }
+
+        .status-bar {
+            background: #16213e;
+            border-radius: 10px;
+            padding: 12px 15px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 14px;
+        }
+
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #666;
+        }
+
+        .status-dot.ready { background: #4ade80; }
+        .status-dot.scanning { background: #facc15; animation: pulse 1s infinite; }
+        .status-dot.success { background: #4ade80; }
+        .status-dot.error { background: #ef4444; }
+
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+
+        .camera-box {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 4/3;
+            background: #000;
+            border-radius: 12px;
+            overflow: hidden;
+            margin-bottom: 15px;
+        }
+
+        #video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        #canvas {
+            display: none;
+        }
+
+        .guide-frame {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 85%;
+            height: 60%;
+            border: 2px dashed rgba(255,255,255,0.5);
+            border-radius: 8px;
+            pointer-events: none;
+        }
+
+        .guide-text {
+            position: absolute;
+            bottom: 15%;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 12px;
+            color: rgba(255,255,255,0.7);
+            text-align: center;
+            background: rgba(0,0,0,0.5);
+            padding: 5px 12px;
+            border-radius: 15px;
+        }
+
+        .btn-row {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 14px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: #4f46e5;
+            color: #fff;
+        }
+
+        .btn-primary:hover { background: #4338ca; }
+        .btn-primary:disabled { background: #666; cursor: not-allowed; }
+
+        .btn-secondary {
+            background: #374151;
+            color: #fff;
+        }
+
+        .btn-secondary:hover { background: #4b5563; }
+
+        .upload-btn {
+            display: none;
+        }
+
+        .result-box {
+            background: #16213e;
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+
+        .result-title {
+            font-size: 14px;
+            color: #9ca3af;
+            margin-bottom: 10px;
+        }
+
+        .result-content {
+            font-size: 16px;
+        }
+
+        .result-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #374151;
+        }
+
+        .result-item:last-child { border-bottom: none; }
+
+        .result-label { color: #9ca3af; }
+        .result-value { font-weight: 600; }
+
+        .match-result {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: 600;
+            font-size: 16px;
+        }
+
+        .match-found {
+            background: rgba(74, 222, 128, 0.2);
+            border: 1px solid #4ade80;
+            color: #4ade80;
+        }
+
+        .match-not-found {
+            background: rgba(239, 68, 68, 0.2);
+            border: 1px solid #ef4444;
+            color: #ef4444;
+        }
+
+        .ocr-text {
+            background: #0f172a;
+            border-radius: 8px;
+            padding: 12px;
+            font-size: 12px;
+            color: #9ca3af;
+            margin-top: 10px;
+            max-height: 100px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+
+        .upload-area {
+            background: #16213e;
+            border: 2px dashed #374151;
+            border-radius: 12px;
+            padding: 30px;
+            text-align: center;
+            margin-bottom: 15px;
+            cursor: pointer;
+        }
+
+        .upload-area:hover {
+            border-color: #4f46e5;
+        }
+
+        .upload-icon {
+            font-size: 40px;
+            margin-bottom: 10px;
+        }
+
+        .upload-text {
+            font-size: 14px;
+            color: #9ca3af;
+        }
+
+        .hidden { display: none !important; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>教师资格证核查系统</h1>
+
+        <!-- 状态栏 -->
+        <div class="status-bar">
+            <div class="status-dot" id="statusDot"></div>
+            <span id="statusText">准备就绪</span>
+        </div>
+
+        <!-- 上传Excel区域 -->
+        <div class="upload-area" id="uploadArea" onclick="document.getElementById('excelInput').click()">
+            <div class="upload-icon">📊</div>
+            <div class="upload-text">点击上传 Excel 文件</div>
+        </div>
+        <input type="file" id="excelInput" accept=".xlsx,.xls" class="upload-btn">
+
+        <!-- 摄像头区域 -->
+        <div class="camera-box" id="cameraBox">
+            <video id="video" autoplay playsinline></video>
+            <div class="guide-frame"></div>
+            <div class="guide-text">将教师资格证放入框内，保持稳定</div>
+        </div>
+        <canvas id="canvas"></canvas>
+
+        <!-- 按钮区域 -->
+        <div class="btn-row">
+            <button class="btn btn-secondary" id="uploadPhotoBtn" onclick="document.getElementById('photoInput').click()">
+                📷 从相册选择
+            </button>
+            <button class="btn btn-primary" id="captureBtn" onclick="manualCapture()">
+                🔍 立即识别
+            </button>
+        </div>
+        <input type="file" id="photoInput" accept="image/*" class="upload-btn">
+
+        <!-- 识别结果 -->
+        <div class="result-box hidden" id="resultBox">
+            <div class="result-title">识别结果</div>
+            <div class="result-content" id="resultContent"></div>
+            <div class="ocr-text" id="ocrText"></div>
+        </div>
+    </div>
+
+    <script>
+        // 配置 - 使用Vercel API代理
+        const API_PROXY = '/api/ocr';
+
+        // 状态变量
+        let excelData = [];
+        let videoStream = null;
+        let lastFrameData = null;
+        let stabilityTimer = null;
+        let isProcessing = false;
+
+        // 元素
+        const video = document.getElementById('video');
+        const canvas = document.getElementById('canvas');
+        const statusDot = document.getElementById('statusDot');
+        const statusText = document.getElementById('statusText');
+        const resultBox = document.getElementById('resultBox');
+        const resultContent = document.getElementById('resultContent');
+        const ocrText = document.getElementById('ocrText');
+
+        // 初始化
+        async function init() {
+            try {
+                // 启动摄像头
+                await startCamera();
+                // 上传Excel监听
+                document.getElementById('excelInput').addEventListener('change', handleExcelUpload);
+                document.getElementById('photoInput').addEventListener('change', handlePhotoUpload);
+                updateStatus('ready', '准备就绪');
+            } catch (error) {
+                updateStatus('error', '初始化失败: ' + error.message);
+            }
+        }
+
+        // 启动摄像头
+        async function startCamera() {
+            try {
+                videoStream = await navigator.mediaDevices.getUserMedia({
+                    video: { facingMode: 'environment', width: { ideal: 1920 }, height: { ideal: 1080 } },
+                    audio: false
+                });
+                video.srcObject = videoStream;
+                updateStatus('ready', '摄像头已启动');
+
+                // 开始稳定检测
+                startStabilityCheck();
+            } catch (error) {
+                updateStatus('error', '无法访问摄像头: ' + error.message);
+            }
+        }
+
+        // 稳定检测
+        function startStabilityCheck() {
+            const ctx = canvas.getContext('2d');
+
+            function checkStability() {
+                if (isProcessing) {
+                    stabilityTimer = requestAnimationFrame(checkStability);
+                    return;
+                }
+
+                canvas.width = video.videoWidth;
+                canvas.height = video.videoHeight;
+                ctx.drawImage(video, 0, 0);
+
+                const currentData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                const diff = compareFrames(lastFrameData, currentData);
+
+                if (diff < 0.02 && lastFrameData !== null) {
+                    // 画面稳定，开始倒计时
+                    if (!stabilityTimer) {
+                        updateStatus('scanning', '画面稳定，3秒后自动拍照...');
+                        let countdown = 3;
+
+                        stabilityTimer = setInterval(() => {
+                            countdown--;
+                            if (countdown <= 0) {
+                                clearInterval(stabilityTimer);
+                                stabilityTimer = null;
+                                captureAndRecognize();
+                            } else {
+                                updateStatus('scanning', `画面稳定，${countdown}秒后自动拍照...`);
+                            }
+                        }, 1000);
+                    }
+                } else {
+                    // 画面不稳定
+                    if (stabilityTimer) {
+                        clearInterval(stabilityTimer);
+                        stabilityTimer = null;
+                    }
+                    if (lastFrameData !== null) {
+                        updateStatus('ready', '将证书放稳后自动识别');
+                    }
+                }
+
+                lastFrameData = currentData;
+                stabilityTimer = requestAnimationFrame(checkStability);
+            }
+
+            checkStability();
+        }
+
+        // 比较两帧差异
+        function compareFrames(frame1, frame2) {
+            if (!frame1 || !frame2) return 1;
+            if (frame1.data.length !== frame2.data.length) return 1;
+
+            let diff = 0;
+            const data1 = frame1.data;
+            const data2 = frame2.data;
+            const step = 4; // 采样步长
+
+            for (let i = 0; i < data1.length; i += step) {
+                diff += Math.abs(data1[i] - data2[i]);
+            }
+
+            return diff / (data1.length / 4) / 255;
+        }
+
+        // 手动拍照
+        function manualCapture() {
+            if (isProcessing) return;
+            if (stabilityTimer) {
+                clearInterval(stabilityTimer);
+                stabilityTimer = null;
+            }
+            captureAndRecognize();
+        }
+
+        // 拍照并识别
+        async function captureAndRecognize() {
+            isProcessing = true;
+            updateStatus('scanning', '正在识别...');
+
+            // 拍照
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            canvas.getContext('2d').drawImage(video, 0, 0);
+
+            const imageBase64 = canvas.toDataURL('image/jpeg', 0.8).split(',')[1];
+
+            try {
+                // 调用百度OCR
+                const ocrResult = await callOCR(imageBase64);
+
+                // 提取信息
+                const extracted = extractInfo(ocrResult);
+
+                // 匹配数据
+                const matchResult = matchData(extracted);
+
+                // 显示结果
+                showResult(extracted, matchResult);
+                updateStatus('success', '识别完成');
+            } catch (error) {
+                updateStatus('error', '识别失败: ' + error.message);
+            }
+
+            isProcessing = false;
+        }
+
+        // 调用OCR API (通过Vercel代理)
+        async function callOCR(imageBase64) {
+            const response = await fetch(API_PROXY, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ image: imageBase64 })
+            });
+
+            const data = await response.json();
+            if (data.error) {
+                throw new Error(data.error || 'OCR识别失败');
+            }
+
+            return data;
+        }
+
+        // 提取关键信息
+        function extractInfo(ocrResult) {
+            const allText = ocrResult.words_result ?
+                ocrResult.words_result.map(r => r.words).join('\n') :
+                ocrResult.words_result_alt || '';
+
+            const result = {
+                rawText: allText,
+                idNumber: '',
+                qualificationType: '',
+                subject: ''
+            };
+
+            // 提取身份证号 (18位)
+            // 提取身份证号 (18位或15位)
+            const idMatch = allText.match(/\d{17}[\dXx]|\d{15}/);
+            if (idMatch) result.idNumber = idMatch[0];
+
+            // 提取资格种类
+            const qualificationKeywords = ['高级中学', '中等职业学校', '初级中学', '小学', '幼儿园', '特殊教育'];
+            for (const kw of qualificationKeywords) {
+                if (allText.includes(kw)) {
+                    result.qualificationType = kw;
+                    break;
+                }
+            }
+
+            // 提取任教学科 - 常见的学科关键词
+            const subjectKeywords = [
+                '语文', '数学', '英语', '物理', '化学', '生物',
+                '政治', '历史', '地理', '音乐', '美术', '体育',
+                '信息技术', '通用技术', '科学', '心理健康', '学前教育'
+            ];
+            for (const kw of subjectKeywords) {
+                if (allText.includes(kw)) {
+                    result.subject = kw;
+                    break;
+                }
+            }
+
+            return result;
+        }
+
+        // 匹配Excel数据
+        function matchData(extracted) {
+            if (!extracted.idNumber) {
+                return { found: false, reason: '未识别到身份证号' };
+            }
+
+            if (excelData.length === 0) {
+                return { found: false, reason: '请先上传Excel文件' };
+            }
+
+            // 查找匹配
+            const match = excelData.find(row => {
+                const excelId = String(row['证件号码'] || '').trim();
+                return excelId === extracted.idNumber;
+            });
+
+            if (!match) {
+                return { found: false, reason: '该身份证号不在库中' };
+            }
+
+            // 如果识别到了资格种类或学科，验证是否匹配
+            if (extracted.qualificationType && match['资格种类'] !== extracted.qualificationType) {
+                return {
+                    found: false,
+                    reason: `资格种类不匹配：Excel为"${match['资格种类']}"，识别为"${extracted.qualificationType}"`
+                };
+            }
+
+            if (extracted.subject && match['任教学科'] !== extracted.subject) {
+                return {
+                    found: false,
+                    reason: `任教学科不匹配：Excel为"${match['任教学科']}"，识别为"${extracted.subject}"`
+                };
+            }
+
+            return {
+                found: true,
+                data: match
+            };
+        }
+
+        // 显示结果
+        function showResult(extracted, matchResult) {
+            resultBox.classList.remove('hidden');
+
+            let html = `
+                <div class="result-item">
+                    <span class="result-label">身份证号</span>
+                    <span class="result-value">${extracted.idNumber || '未识别'}</span>
+                </div>
+                <div class="result-item">
+                    <span class="result-label">资格种类</span>
+                    <span class="result-value">${extracted.qualificationType || '未识别'}</span>
+                </div>
+                <div class="result-item">
+                    <span class="result-label">任教学科</span>
+                    <span class="result-value">${extracted.subject || '未识别'}</span>
+                </div>
+            `;
+
+            if (matchResult.found) {
+                html += `
+                    <div class="match-result match-found">
+                        ✅ 核查通过：${matchResult.data['确认点']} - ${matchResult.data['任教学科']}
+                    </div>
+                `;
+            } else {
+                html += `
+                    <div class="match-result match-not-found">
+                        ⚠️ ${matchResult.reason}
+                    </div>
+                `;
+            }
+
+            resultContent.innerHTML = html;
+            ocrText.textContent = extracted.rawText;
+        }
+
+        // 处理Excel上传
+        function handleExcelUpload(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const workbook = XLSX.read(e.target.result, { type: 'array' });
+                    const sheetName = workbook.SheetNames[0];
+                    excelData = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName]);
+
+                    updateStatus('ready', `已加载 ${excelData.length} 条数据`);
+                    document.getElementById('uploadArea').classList.add('hidden');
+                } catch (error) {
+                    updateStatus('error', 'Excel解析失败: ' + error.message);
+                }
+            };
+            reader.readAsArrayBuffer(file);
+        }
+
+        // 处理相册照片
+        function handlePhotoUpload(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = async function(e) {
+                isProcessing = true;
+                updateStatus('scanning', '正在识别...');
+
+                try {
+                    const imageBase64 = e.target.result.split(',')[1];
+                    const ocrResult = await callOCR(imageBase64);
+                    const extracted = extractInfo(ocrResult);
+                    const matchResult = matchData(extracted);
+                    showResult(extracted, matchResult);
+                    updateStatus('success', '识别完成');
+                } catch (error) {
+                    updateStatus('error', '识别失败: ' + error.message);
+                }
+
+                isProcessing = false;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // 更新状态
+        function updateStatus(status, text) {
+            statusDot.className = 'status-dot ' + status;
+            statusText.textContent = text;
+        }
+
+        // 启动
+        init();
+    </script>
+</body>
+</html>
