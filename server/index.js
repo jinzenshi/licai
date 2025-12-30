@@ -177,7 +177,7 @@ const server = http.createServer(async (req, res) => {
               确认点: match['确认点'],
               终审注册状态: match['终审注册状态']
             }
-          } : match === null ? { found: false, reason: '该身份证号不在库中' } : { found: false, reason: match.reason }
+          } : match === null ? { found: false, reason: '该身份证号不在库中', name: '' } : { found: false, reason: match.reason, name: match['姓名'] || '' }
         }));
       } catch (error) {
         res.writeHead(500, { 'Content-Type': 'application/json' });

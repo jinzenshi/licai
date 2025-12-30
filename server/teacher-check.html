@@ -231,12 +231,14 @@
                 }
             });
             fail.forEach(r => {
+                const name = r.match && r.match.name ? r.match.name : '';
                 const reason = r.match && r.match.reason ? r.match.reason : '未识别到身份证号';
                 let detail = r.idNumber || '未知';
                 if (r.qualificationType) detail += ` (识:${r.qualificationType}${r.subject ? '-' + r.subject : ''})`;
+                const displayName = name ? `【${name}】` : '';
                 html += `
                     <div class="result-item">
-                        <span class="result-name result-fail">❌ ${reason}</span>
+                        <span class="result-name result-fail">❌ ${displayName}${reason}</span>
                         <span class="result-id">${detail}</span>
                     </div>
                 `;
