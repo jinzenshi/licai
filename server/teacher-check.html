@@ -207,16 +207,18 @@
                 html += `
                     <div class="result-item">
                         <span class="result-name result-pass">✅ ${r.match.data.姓名}</span>
-                        <span class="result-id">${r.idNumber} - ${r.match.data.资格种类}</span>
+                        <span class="result-id">${r.idNumber} - ${r.match.data.资格种类} - ${r.match.data.任教学科}</span>
                     </div>
                 `;
             });
             fail.forEach(r => {
                 const reason = r.match ? r.match.reason : '未识别到身份证号';
+                let detail = r.idNumber || '未知';
+                if (r.qualificationType) detail += ` (识:${r.qualificationType}${r.subject ? '-' + r.subject : ''})`;
                 html += `
                     <div class="result-item">
                         <span class="result-name result-fail">❌ ${reason}</span>
-                        <span class="result-id">${r.idNumber || '未知'}</span>
+                        <span class="result-id">${detail}</span>
                     </div>
                 `;
             });

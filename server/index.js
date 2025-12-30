@@ -51,14 +51,40 @@ function serveStatic(req, res, filePath) {
   });
 }
 
-// 查询数据
-function queryData(idNumber) {
+// 查询数据（匹配身份证号、资格种类、任教学科）
+function queryData(idNumber, qualificationType, subject) {
   idNumber = idNumber.toUpperCase();
   const match = excelData.find(row => {
     const excelId = String(row['证件号码'] || '').trim().toUpperCase();
     return excelId === idNumber;
   });
-  return match || null;
+
+  if (!match) return null; // 身份证号不在库中
+
+  // 如果没有识别到资格种类和学科，直接返回匹配成功
+  if (!qualificationType && !subject) return match;
+
+  // 检查资格种类是否匹配（允许部分匹配）
+  if (qualificationType) {
+    const excelQual = match['资格种类'] || '';
+    const isQualMatch = excelQual.includes(qualificationType) ||
+                        qualificationType.includes(excelQual.replace('教师资格', '')) ||
+                        qualificationType.includes(excelQual);
+    if (!isQualMatch) {
+      return { reason: `资格种类不匹配：库中为"${excelQual}"，识别为"${qualificationType}"` };
+    }
+  }
+
+  // 检查任教学科是否匹配（允许部分匹配）
+  if (subject) {
+    const excelSubject = match['任教学科'] || '';
+    const isSubjectMatch = excelSubject.includes(subject) || subject.includes(excelSubject);
+    if (!isSubjectMatch) {
+      return { reason: `任教学科不匹配：库中为"${excelSubject}"，识别为"${subject}"` };
+    }
+  }
+
+  return match;
 }
 
 // HTTP服务器
@@ -83,7 +109,7 @@ const server = http.createServer(async (req, res) => {
         const { image } = JSON.parse(body);
         if (!image) throw new Error('缺少图片数据');
 
-        // 调用豆包API（优化：快速模式）
+        // 调用豆包API（提取身份证号、资格种类、任教学科）
         const response = await fetch(DOUBAO_ENDPOINT, {
           method: 'POST',
           headers: {
@@ -92,14 +118,14 @@ const server = http.createServer(async (req, res) => {
           },
           body: JSON.stringify({
             model: DOUBAO_MODEL,
-            max_tokens: 50,
+            max_tokens: 80,
             temperature: 0.1,
             messages: [
               {
                 role: 'user',
                 content: [
                   { type: 'image_url', image_url: { url: `data:image/jpeg;base64,${image}` } },
-                  { type: 'text', text: '提取身份证号，只返回18位数字，不要任何其他文字。' }
+                  { type: 'text', text: '从图片提取信息，只返回JSON：{"idNumber":"身份证号18位","qualificationType":"资格种类(高级中学/中等职业学校/初级中学/小学/幼儿园)","subject":"任教学科(如语文/数学/英语等)"}。如果某项未识别到，值设为空字符串。只返回JSON。' }
                 ]
               }
             ]
@@ -112,17 +138,35 @@ const server = http.createServer(async (req, res) => {
           throw new Error(data.error.message || 'OCR识别失败');
         }
 
-        // 提取身份证号
+        // 解析豆包返回的JSON
         const content = data.choices?.[0]?.message?.content || '';
-        const idMatch = content.match(/\d{17}[\dXx]/);
-        const idNumber = idMatch ? idMatch[0] : '';
+        let ocrData = { idNumber: '', qualificationType: '', subject: '' };
+        try {
+          const jsonMatch = content.match(/\{[\s\S]*\}/);
+          if (jsonMatch) {
+            const parsed = JSON.parse(jsonMatch[0]);
+            ocrData.idNumber = parsed.idNumber || '';
+            ocrData.qualificationType = parsed.qualificationType || '';
+            ocrData.subject = parsed.subject || '';
+          } else {
+            // 如果不是JSON，尝试提取身份证号
+            const idMatch = content.match(/\d{17}[\dXx]/);
+            ocrData.idNumber = idMatch ? idMatch[0] : '';
+          }
+        } catch (e) {
+          // JSON解析失败，尝试提取身份证号
+          const idMatch = content.match(/\d{17}[\dXx]/);
+          ocrData.idNumber = idMatch ? idMatch[0] : '';
+        }
 
-        // 查询数据库
-        const match = queryData(idNumber);
+        // 查询数据库（匹配身份证号、资格种类、任教学科）
+        const match = queryData(ocrData.idNumber, ocrData.qualificationType, ocrData.subject);
 
         res.writeHead(200, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({
-          idNumber,
+          idNumber: ocrData.idNumber,
+          qualificationType: ocrData.qualificationType,
+          subject: ocrData.subject,
           match: match ? {
             found: true,
             data: {
@@ -133,7 +177,7 @@ const server = http.createServer(async (req, res) => {
               确认点: match['确认点'],
               终审注册状态: match['终审注册状态']
             }
-          } : { found: false, reason: '该身份证号不在库中' }
+          } : match === null ? { found: false, reason: '该身份证号不在库中' } : { found: false, reason: match.reason }
         }));
       } catch (error) {
         res.writeHead(500, { 'Content-Type': 'application/json' });
