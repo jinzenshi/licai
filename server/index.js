@@ -7,7 +7,7 @@ const XLSX = require('xlsx');
 // 豆包API配置
 const DOUBAO_API_KEY = process.env.DOUBAO_API_KEY;
 const DOUBAO_ENDPOINT = 'https://ark.cn-beijing.volces.com/api/v3/chat/completions';
-const DOUBAO_MODEL = 'doubao-seed-1-6-flash-250828';
+const DOUBAO_MODEL = 'doubao-seed-1-6-lite-251015';
 
 const PORT = process.env.PORT || 3000;
 
