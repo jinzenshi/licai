@@ -3,7 +3,7 @@
 # Todo List CLI - 简单待办事项管理工具
 
 DATA_FILE="$HOME/.todo_data"
-DELIMITER="::"
+DELIMITER=$'\x1f'
 
 # 初始化数据文件
 if [[ ! -f "$DATA_FILE" ]]; then
@@ -17,8 +17,8 @@ get_next_id() {
         return
     fi
     
-    # 提取所有数字ID，找出最大值，避免非数字ID导致的ID冲突
-    local max_id=$(awk -F'|' '{if ($1 ~ /^[0-9]+$/) if ($1 > max) max=$1} END {print (max=="") ? "1" : max+1}' "$DATA_FILE")
+    # 提取所有数字ID，找出最大值
+    local max_id=$(awk -F'\x1f' '{if ($1 ~ /^[0-9]+$/) if ($1 > max) max=$1} END {print (max=="") ? "1" : max+1}' "$DATA_FILE")
     echo "$max_id"
 }
 
@@ -30,7 +30,8 @@ add_todo() {
         exit 1
     fi
     local id=$(get_next_id)
-    echo "$id$DELIMITER$todo_text$DELIMITERpending" >> "$DATA_FILE"
+    local d="$DELIMITER"
+    echo "$id$d$todo_text${d}pending" >> "$DATA_FILE"
     echo "✅ 已添加: $todo_text (ID: $id)"
 }
 
@@ -43,7 +44,8 @@ list_todos() {
     
     echo "📋 待办事项列表:"
     echo "-------------------"
-    while IFS='|' read -r id text status; do
+    local d="$DELIMITER"
+    while IFS="$d" read -r id text status; do
         if [[ "$status" == "done" ]]; then
             echo "[✓] #$id $text"
         else
@@ -63,14 +65,15 @@ done_todo() {
     
     local temp_file=$(mktemp)
     local found=0
+    local d="$DELIMITER"
     
-    while IFS='|' read -r curr_id text status; do
+    while IFS="$d" read -r curr_id text status; do
         if [[ "$curr_id" == "$id" ]]; then
-            echo "$curr_id|$text|done" >> "$temp_file"
+            echo "$curr_id$d$text${d}done" >> "$temp_file"
             echo "✅ 已完成: $text"
             found=1
         else
-            echo "$curr_id|$text|$status" >> "$temp_file"
+            echo "$curr_id$d$text$d$status" >> "$temp_file"
         fi
     done < "$DATA_FILE"
     
@@ -92,12 +95,14 @@ delete_todo() {
     local temp_file=$(mktemp)
     local found=0
     
-    while IFS='|' read -r curr_id text status; do
+    local d="$DELIMITER"
+    
+    while IFS="$d" read -r curr_id text status; do
         if [[ "$curr_id" == "$id" ]]; then
             echo "🗑️ 已删除: $text"
             found=1
         else
-            echo "$curr_id|$text|$status" >> "$temp_file"
+            echo "$curr_id$d$text$d$status" >> "$temp_file"
         fi
     done < "$DATA_FILE"
     
