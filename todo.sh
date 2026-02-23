@@ -69,18 +69,26 @@ done_todo() {
     
     while IFS="$d" read -r curr_id text status; do
         if [[ "$curr_id" == "$id" ]]; then
-            echo "$curr_id$d$text${d}done" >> "$temp_file"
-            echo "✅ 已完成: $text"
-            found=1
+            if [[ "$status" == "done" ]]; then
+                echo "⚠️ 待办 #$id 已完成，无需重复操作"
+                found=2
+            else
+                echo "$curr_id$d$text${d}done" >> "$temp_file"
+                echo "✅ 已完成: $text"
+                found=1
+            fi
         else
             echo "$curr_id$d$text$d$status" >> "$temp_file"
         fi
     done < "$DATA_FILE"
     
-    mv "$temp_file" "$DATA_FILE"
-    
     if [[ $found -eq 0 ]]; then
         echo "Error: 未找到ID为 $id 的待办"
+    elif [[ $found -eq 2 ]]; then
+        # 已存在，不需要更新文件
+        rm "$temp_file"
+    else
+        mv "$temp_file" "$DATA_FILE"
     fi
 }
 
