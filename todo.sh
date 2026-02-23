@@ -83,7 +83,10 @@ done_todo() {
     done < "$DATA_FILE"
     
     if [[ $found -eq 0 ]]; then
+        # 未找到时不要覆盖原文件
+        rm "$temp_file"
         echo "Error: 未找到ID为 $id 的待办"
+        exit 1
     elif [[ $found -eq 2 ]]; then
         # 已存在，不需要更新文件
         rm "$temp_file"
