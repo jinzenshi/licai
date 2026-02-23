@@ -29,7 +29,7 @@
 ./todo.sh help
 ```
 
-## 文件
+## 数据文件
 
 - `todo.sh` - 主程序
-- `todos.txt` - 数据文件（自动创建）
+- `~/.todo_data` - 数据文件（自动创建于用户 home 目录）
