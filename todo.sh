@@ -114,11 +114,14 @@ delete_todo() {
         fi
     done < "$DATA_FILE"
     
-    mv "$temp_file" "$DATA_FILE"
-    
     if [[ $found -eq 0 ]]; then
+        # 未找到时不要覆盖原文件
+        rm "$temp_file"
         echo "Error: 未找到ID为 $id 的待办"
+        exit 1
     fi
+    
+    mv "$temp_file" "$DATA_FILE"
 }
 
 # 显示帮助
