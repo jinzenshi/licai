@@ -112,6 +112,9 @@ done_todo() {
             if [[ ! "$curr_id" =~ ^[0-9]+$ ]]; then
                 continue
             fi
+            if [[ "$status" != "pending" && "$status" != "done" ]]; then
+                continue
+            fi
 
             if [[ "$curr_id" == "$id" ]]; then
                 if [[ "$status" == "done" ]]; then
