@@ -116,3 +116,4 @@
 2026-02-25 06:14 | 修改文件: todo.sh,test_concurrent_delete.sh | 解决问题: delete 增加文件锁避免并发删除竞态导致数据不一致；新增并发回归测试并通过 | 消耗配额: 约1次MiniMax调用
 2026-02-25 06:25 | 修改文件: todo.sh | 解决问题: done 对已完成任务重复执行时保留该记录并回写清洗后数据，避免记录丢失且可清理脏行 | 消耗配额: 约1次MiniMax调用
 2026-02-25 06:58:31 | files: todo.sh,test_list_waits_for_lock.sh | fix: list_todos 增加共享锁，避免并发读到写入中数据 | quota_est: MiniMax~1次
+2026-02-25 07:02:46 | files: todo.sh,test_list_invalid_status.sh,test_list_waits_for_lock.sh | fix: list 过滤非法 status 避免脏数据显示为 pending | quota_est: MiniMax~1次

@@ -75,8 +75,10 @@ list_todos() {
             fi
             if [[ "$status" == "done" ]]; then
                 echo "[✓] #$id $text"
-            else
+            elif [[ "$status" == "pending" ]]; then
                 echo "[ ] #$id $text"
+            else
+                continue
             fi
         done < "$DATA_FILE"
         echo "-------------------"

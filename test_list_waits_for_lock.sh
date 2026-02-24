@@ -16,19 +16,19 @@ locker_pid=$!
 # 确保锁已拿到
 sleep 0.2
 
-start=$(date +%s)
+start=$(date +%s%3N)
 ./todo.sh list > /tmp/list_lock_wait_output.txt
-end=$(date +%s)
+end=$(date +%s%3N)
 
 wait $locker_pid
 
-elapsed=$((end-start))
+elapsed_ms=$((end-start))
 
-# 未加锁时通常 <1s；加共享锁后应等待写锁释放（约2s）
-if [[ "$elapsed" -lt 2 ]]; then
-  echo "❌ list 未等待锁释放，耗时: ${elapsed}s"
+# 未加锁时通常远小于 1s；加共享锁后应等待写锁释放（约2s）
+if [[ "$elapsed_ms" -lt 1500 ]]; then
+  echo "❌ list 未等待锁释放，耗时: ${elapsed_ms}ms"
   exit 1
 fi
 
-echo "✅ list 等待写锁释放，耗时: ${elapsed}s"
+echo "✅ list 等待写锁释放，耗时: ${elapsed_ms}ms"
 rm -f /tmp/list_lock_wait_output.txt
