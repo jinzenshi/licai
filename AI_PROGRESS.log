@@ -109,3 +109,4 @@
 2026-02-25 04:50 | 修改文件: todo.sh,test_delete_malformed.sh | 解决问题: delete 操作时过滤空行/不完整/非法ID记录，避免脏数据在重写时被保留；新增回归测试并通过 | 消耗配额: 约1次MiniMax调用
 2026-02-25 05:05 | 修改文件: todo.sh,test_done_cleanup.sh | 解决问题: done 在未找到ID/已完成分支也回写清洗后的数据，避免脏数据长期残留；新增回归测试并通过 | 消耗配额: 约1次MiniMax调用
 2026-02-25 05:25 | 修改文件: todo.sh,test_done_data_loss.sh | 解决问题: done 对已完成任务重复执行时避免用空临时文件覆盖数据，修复潜在数据丢失；新增回归测试并通过 | 消耗配额: 约1次MiniMax调用
+2026-02-25 05:50 | 修改文件: todo.sh,test_add_whitespace.sh | 解决问题: add 拒绝仅空白字符待办，避免生成无效空内容任务；新增回归测试并通过 | 消耗配额: 约1次MiniMax调用

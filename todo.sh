@@ -25,7 +25,7 @@ get_next_id() {
 # 添加待办
 add_todo() {
     local todo_text="$*"
-    if [[ -z "$todo_text" ]]; then
+    if [[ -z "$todo_text" || -z "${todo_text//[[:space:]]/}" ]]; then
         echo "Error: 请输入待办内容"
         exit 1
     fi
