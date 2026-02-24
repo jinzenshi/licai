@@ -120,3 +120,4 @@
 2026-02-25 07:06:15 | files: todo.sh,test_done_invalid_status.sh | fix: done_todo 过滤非法 status 行并在重写时清理脏数据 | quota_est: MiniMax~1次
 2026-02-25 07:10:48 | files: todo.sh,test_delete_invalid_status.sh | fix: delete_todo 重写时过滤非法 status 行，清理脏数据 | quota_est: MiniMax~1次
 2026-02-25 07:44:13 | files: todo.sh,test_delete_notfound_cleanup.sh | fix: delete 未找到ID时回写有效数据并清理脏行 | quota_est: MiniMax~1次
+2026-02-25 07:45:22 | files: todo.sh,test_list_malformed_only.sh | fix: list 仅脏行时提示无待办，避免空列表误导 | quota_est: MiniMax~1次

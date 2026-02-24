@@ -64,6 +64,7 @@ list_todos() {
         echo "📋 待办事项列表:"
         echo "-------------------"
         local d="$DELIMITER"
+        local shown=0
         while IFS="$d" read -r id text status; do
             # 跳过空行和格式不完整的行
             if [[ -z "$id" || -z "$text" || -z "$status" ]]; then
@@ -75,13 +76,18 @@ list_todos() {
             fi
             if [[ "$status" == "done" ]]; then
                 echo "[✓] #$id $text"
+                shown=1
             elif [[ "$status" == "pending" ]]; then
                 echo "[ ] #$id $text"
+                shown=1
             else
                 continue
             fi
         done < "$DATA_FILE"
         echo "-------------------"
+        if [[ $shown -eq 0 ]]; then
+            echo "📝 没有待办事项"
+        fi
     ) 200>"$DATA_FILE.lock"
 }
 
