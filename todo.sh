@@ -29,6 +29,11 @@ add_todo() {
         echo "Error: 请输入待办内容"
         exit 1
     fi
+    # 检查是否包含分隔符字符
+    if [[ "$todo_text" == *$'\x1f'* ]]; then
+        echo "Error: 待办内容不能包含分隔符字符"
+        exit 1
+    fi
     local id=$(get_next_id)
     local d="$DELIMITER"
     echo "$id$d$todo_text${d}pending" >> "$DATA_FILE"
