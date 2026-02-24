@@ -107,3 +107,4 @@
 2026-02-25 04:07 | 修改文件: todo.sh,test_delimiter_bug.sh | 解决问题: add 命令拒绝包含分隔符(0x1f)的待办内容，防止数据解析异常；新增回归测试并通过 | 消耗配额: 约1次MiniMax调用
 2026-02-25 04:25 | 修改文件: todo.sh,test_done_malformed.sh | 解决问题: done 操作时过滤空行/不完整/非法ID记录，避免脏数据在重写时被保留或继续污染；新增回归测试并通过 | 消耗配额: 约1次MiniMax调用
 2026-02-25 04:50 | 修改文件: todo.sh,test_delete_malformed.sh | 解决问题: delete 操作时过滤空行/不完整/非法ID记录，避免脏数据在重写时被保留；新增回归测试并通过 | 消耗配额: 约1次MiniMax调用
+2026-02-25 05:05 | 修改文件: todo.sh,test_done_cleanup.sh | 解决问题: done 在未找到ID/已完成分支也回写清洗后的数据，避免脏数据长期残留；新增回归测试并通过 | 消耗配额: 约1次MiniMax调用
