@@ -195,8 +195,12 @@ delete_todo() {
         done < "$DATA_FILE"
 
         if [[ $found -eq 0 ]]; then
-            # 未找到时不要覆盖原文件
-            rm "$temp_file"
+            # 未找到时若已有有效数据，回写并清理脏行
+            if [[ -s "$temp_file" ]]; then
+                mv "$temp_file" "$DATA_FILE"
+            else
+                rm "$temp_file"
+            fi
             echo "Error: 未找到ID为 $id 的待办"
             exit 1
         fi
