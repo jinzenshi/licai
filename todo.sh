@@ -181,6 +181,10 @@ delete_todo() {
             if [[ ! "$curr_id" =~ ^[0-9]+$ ]]; then
                 continue
             fi
+            # 跳过非法状态行
+            if [[ "$status" != "pending" && "$status" != "done" ]]; then
+                continue
+            fi
 
             if [[ "$curr_id" == "$id" ]]; then
                 echo "🗑️ 已删除: $text"
