@@ -108,6 +108,8 @@ done_todo() {
 
             if [[ "$curr_id" == "$id" ]]; then
                 if [[ "$status" == "done" ]]; then
+                    # 保留已完成项，避免重复 done 时丢失该记录
+                    echo "$curr_id$d$text$d$status" >> "$temp_file"
                     echo "⚠️ 待办 #$id 已完成，无需重复操作"
                     found=2
                 else
@@ -131,8 +133,8 @@ done_todo() {
             echo "Error: 未找到ID为 $id 的待办"
             exit 1
         elif [[ $found -eq 2 ]]; then
-            # 待办已完成时，不需要写入文件，直接删除临时文件
-            rm "$temp_file"
+            # 待办已完成时回写有效数据，顺带清理脏行
+            mv "$temp_file" "$DATA_FILE"
         else
             mv "$temp_file" "$DATA_FILE"
         fi
