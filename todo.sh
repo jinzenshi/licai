@@ -41,11 +41,19 @@ list_todos() {
         echo "📝 没有待办事项"
         return
     fi
-    
+
     echo "📋 待办事项列表:"
     echo "-------------------"
     local d="$DELIMITER"
     while IFS="$d" read -r id text status; do
+        # 跳过空行和格式不完整的行
+        if [[ -z "$id" || -z "$text" || -z "$status" ]]; then
+            continue
+        fi
+        # 跳过包含非法ID的行（非数字）
+        if [[ ! "$id" =~ ^[0-9]+$ ]]; then
+            continue
+        fi
         if [[ "$status" == "done" ]]; then
             echo "[✓] #$id $text"
         else
