@@ -112,8 +112,8 @@ done_todo() {
         echo "Error: 未找到ID为 $id 的待办"
         exit 1
     elif [[ $found -eq 2 ]]; then
-        # 已存在时也需要清理脏数据
-        mv "$temp_file" "$DATA_FILE"
+        # 待办已完成时，不需要写入文件，直接删除临时文件
+        rm "$temp_file"
     else
         mv "$temp_file" "$DATA_FILE"
     fi
