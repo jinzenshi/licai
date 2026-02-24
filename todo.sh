@@ -135,8 +135,17 @@ delete_todo() {
     local found=0
     
     local d="$DELIMITER"
-    
+
     while IFS="$d" read -r curr_id text status; do
+        # 跳过空行和格式不完整的行
+        if [[ -z "$curr_id" || -z "$text" || -z "$status" ]]; then
+            continue
+        fi
+        # 跳过包含非法ID的行（非数字）
+        if [[ ! "$curr_id" =~ ^[0-9]+$ ]]; then
+            continue
+        fi
+
         if [[ "$curr_id" == "$id" ]]; then
             echo "🗑️ 已删除: $text"
             found=1

@@ -106,3 +106,4 @@
 2026-02-25 04:00 | 修改文件: todo.sh,test_edge_case.sh,test_invalid_id.sh(权限) | 解决问题: list_todos 过滤空行/不完整记录/非法ID，避免异常数据显示；新增边界测试并通过 | 消耗配额: 约1次MiniMax调用
 2026-02-25 04:07 | 修改文件: todo.sh,test_delimiter_bug.sh | 解决问题: add 命令拒绝包含分隔符(0x1f)的待办内容，防止数据解析异常；新增回归测试并通过 | 消耗配额: 约1次MiniMax调用
 2026-02-25 04:25 | 修改文件: todo.sh,test_done_malformed.sh | 解决问题: done 操作时过滤空行/不完整/非法ID记录，避免脏数据在重写时被保留或继续污染；新增回归测试并通过 | 消耗配额: 约1次MiniMax调用
+2026-02-25 04:50 | 修改文件: todo.sh,test_delete_malformed.sh | 解决问题: delete 操作时过滤空行/不完整/非法ID记录，避免脏数据在重写时被保留；新增回归测试并通过 | 消耗配额: 约1次MiniMax调用
