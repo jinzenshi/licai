@@ -16,7 +16,7 @@ get_next_id() {
         echo "1"
         return
     fi
-    
+
     # 提取所有数字ID，找出最大值
     local max_id=$(awk -F'\x1f' '{if ($1 ~ /^[0-9]+$/) if ($1 > max) max=$1} END {print (max=="") ? "1" : max+1}' "$DATA_FILE")
     echo "$max_id"
@@ -39,10 +39,15 @@ add_todo() {
         echo "Error: 待办内容不能包含换行符"
         exit 1
     fi
-    local id=$(get_next_id)
     local d="$DELIMITER"
-    echo "$id$d$todo_text${d}pending" >> "$DATA_FILE"
-    echo "✅ 已添加: $todo_text (ID: $id)"
+
+    # 使用文件锁保证“取ID + 写入”原子化，避免并发重复ID
+    (
+        flock -x 200 || exit 1
+        local id=$(get_next_id)
+        echo "$id$d$todo_text${d}pending" >> "$DATA_FILE"
+        echo "✅ 已添加: $todo_text (ID: $id)"
+    ) 200>"$DATA_FILE.lock"
 }
 
 # 列出待办
