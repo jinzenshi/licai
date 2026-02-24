@@ -85,6 +85,13 @@ done_todo() {
     local d="$DELIMITER"
     
     while IFS="$d" read -r curr_id text status; do
+        if [[ -z "$curr_id" || -z "$text" || -z "$status" ]]; then
+            continue
+        fi
+        if [[ ! "$curr_id" =~ ^[0-9]+$ ]]; then
+            continue
+        fi
+
         if [[ "$curr_id" == "$id" ]]; then
             if [[ "$status" == "done" ]]; then
                 echo "⚠️ 待办 #$id 已完成，无需重复操作"
