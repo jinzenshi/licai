@@ -98,3 +98,8 @@
 - 修改文件: test_bug.sh
 - 解决问题: 修复测试脚本直接调用内部函数导致 get_next_id: command not found，改为通过 CLI 与数据文件断言验证
 - 消耗配额: 约1次MiniMax调用
+
+2026-02-25 03:20
+- 修改文件: todo.sh,test_invalid_id.sh
+- 解决问题: 增加 done/delete 的数字ID校验，修复非法ID输入提示不准确问题
+- 消耗配额: 约1次MiniMax调用

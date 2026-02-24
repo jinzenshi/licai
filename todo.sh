@@ -62,6 +62,10 @@ done_todo() {
         echo "Error: 请指定待办ID"
         exit 1
     fi
+    if [[ ! "$id" =~ ^[0-9]+$ ]]; then
+        echo "Error: ID必须为数字"
+        exit 1
+    fi
     
     local temp_file=$(mktemp)
     local found=0
@@ -100,6 +104,10 @@ delete_todo() {
     local id="$1"
     if [[ -z "$id" ]]; then
         echo "Error: 请指定待办ID"
+        exit 1
+    fi
+    if [[ ! "$id" =~ ^[0-9]+$ ]]; then
+        echo "Error: ID必须为数字"
         exit 1
     fi
     
