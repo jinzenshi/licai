@@ -150,38 +150,43 @@ delete_todo() {
         echo "Error: ID必须为数字"
         exit 1
     fi
-    
+
     local temp_file=$(mktemp)
     local found=0
-    
+
     local d="$DELIMITER"
 
-    while IFS="$d" read -r curr_id text status; do
-        # 跳过空行和格式不完整的行
-        if [[ -z "$curr_id" || -z "$text" || -z "$status" ]]; then
-            continue
-        fi
-        # 跳过包含非法ID的行（非数字）
-        if [[ ! "$curr_id" =~ ^[0-9]+$ ]]; then
-            continue
+    # 使用文件锁保证并发安全
+    (
+        flock -x 200 || exit 1
+
+        while IFS="$d" read -r curr_id text status; do
+            # 跳过空行和格式不完整的行
+            if [[ -z "$curr_id" || -z "$text" || -z "$status" ]]; then
+                continue
+            fi
+            # 跳过包含非法ID的行（非数字）
+            if [[ ! "$curr_id" =~ ^[0-9]+$ ]]; then
+                continue
+            fi
+
+            if [[ "$curr_id" == "$id" ]]; then
+                echo "🗑️ 已删除: $text"
+                found=1
+            else
+                echo "$curr_id$d$text$d$status" >> "$temp_file"
+            fi
+        done < "$DATA_FILE"
+
+        if [[ $found -eq 0 ]]; then
+            # 未找到时不要覆盖原文件
+            rm "$temp_file"
+            echo "Error: 未找到ID为 $id 的待办"
+            exit 1
         fi
 
-        if [[ "$curr_id" == "$id" ]]; then
-            echo "🗑️ 已删除: $text"
-            found=1
-        else
-            echo "$curr_id$d$text$d$status" >> "$temp_file"
-        fi
-    done < "$DATA_FILE"
-    
-    if [[ $found -eq 0 ]]; then
-        # 未找到时不要覆盖原文件
-        rm "$temp_file"
-        echo "Error: 未找到ID为 $id 的待办"
-        exit 1
-    fi
-    
-    mv "$temp_file" "$DATA_FILE"
+        mv "$temp_file" "$DATA_FILE"
+    ) 200>"$DATA_FILE.lock"
 }
 
 # 显示帮助
