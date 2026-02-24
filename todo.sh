@@ -52,30 +52,35 @@ add_todo() {
 
 # 列出待办
 list_todos() {
-    if [[ ! -s "$DATA_FILE" ]]; then
-        echo "📝 没有待办事项"
-        return
-    fi
+    # 使用共享锁，避免读取到写入中的半成品数据
+    (
+        flock -s 200 || exit 1
 
-    echo "📋 待办事项列表:"
-    echo "-------------------"
-    local d="$DELIMITER"
-    while IFS="$d" read -r id text status; do
-        # 跳过空行和格式不完整的行
-        if [[ -z "$id" || -z "$text" || -z "$status" ]]; then
-            continue
+        if [[ ! -s "$DATA_FILE" ]]; then
+            echo "📝 没有待办事项"
+            exit 0
         fi
-        # 跳过包含非法ID的行（非数字）
-        if [[ ! "$id" =~ ^[0-9]+$ ]]; then
-            continue
-        fi
-        if [[ "$status" == "done" ]]; then
-            echo "[✓] #$id $text"
-        else
-            echo "[ ] #$id $text"
-        fi
-    done < "$DATA_FILE"
-    echo "-------------------"
+
+        echo "📋 待办事项列表:"
+        echo "-------------------"
+        local d="$DELIMITER"
+        while IFS="$d" read -r id text status; do
+            # 跳过空行和格式不完整的行
+            if [[ -z "$id" || -z "$text" || -z "$status" ]]; then
+                continue
+            fi
+            # 跳过包含非法ID的行（非数字）
+            if [[ ! "$id" =~ ^[0-9]+$ ]]; then
+                continue
+            fi
+            if [[ "$status" == "done" ]]; then
+                echo "[✓] #$id $text"
+            else
+                echo "[ ] #$id $text"
+            fi
+        done < "$DATA_FILE"
+        echo "-------------------"
+    ) 200>"$DATA_FILE.lock"
 }
 
 # 完成待办
