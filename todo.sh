@@ -89,44 +89,54 @@ done_todo() {
         echo "Error: ID必须为数字"
         exit 1
     fi
-    
+
     local temp_file=$(mktemp)
     local found=0
     local d="$DELIMITER"
-    
-    while IFS="$d" read -r curr_id text status; do
-        if [[ -z "$curr_id" || -z "$text" || -z "$status" ]]; then
-            continue
-        fi
-        if [[ ! "$curr_id" =~ ^[0-9]+$ ]]; then
-            continue
-        fi
 
-        if [[ "$curr_id" == "$id" ]]; then
-            if [[ "$status" == "done" ]]; then
-                echo "⚠️ 待办 #$id 已完成，无需重复操作"
-                found=2
-            else
-                echo "$curr_id$d$text${d}done" >> "$temp_file"
-                echo "✅ 已完成: $text"
-                found=1
+    # 使用文件锁保证并发安全
+    (
+        flock -x 200 || exit 1
+
+        while IFS="$d" read -r curr_id text status; do
+            if [[ -z "$curr_id" || -z "$text" || -z "$status" ]]; then
+                continue
             fi
+            if [[ ! "$curr_id" =~ ^[0-9]+$ ]]; then
+                continue
+            fi
+
+            if [[ "$curr_id" == "$id" ]]; then
+                if [[ "$status" == "done" ]]; then
+                    echo "⚠️ 待办 #$id 已完成，无需重复操作"
+                    found=2
+                else
+                    echo "$curr_id$d$text${d}done" >> "$temp_file"
+                    echo "✅ 已完成: $text"
+                    found=1
+                fi
+            else
+                echo "$curr_id$d$text$d$status" >> "$temp_file"
+            fi
+        done < "$DATA_FILE"
+
+        if [[ $found -eq 0 ]]; then
+            # 未找到目标ID时，检查临时文件是否有有效数据
+            # 如果临时文件为空(原数据全是无效行)，不应覆盖原文件
+            if [[ -s "$temp_file" ]]; then
+                mv "$temp_file" "$DATA_FILE"
+            else
+                rm "$temp_file"
+            fi
+            echo "Error: 未找到ID为 $id 的待办"
+            exit 1
+        elif [[ $found -eq 2 ]]; then
+            # 待办已完成时，不需要写入文件，直接删除临时文件
+            rm "$temp_file"
         else
-            echo "$curr_id$d$text$d$status" >> "$temp_file"
+            mv "$temp_file" "$DATA_FILE"
         fi
-    done < "$DATA_FILE"
-    
-    if [[ $found -eq 0 ]]; then
-        # 未找到时需要清理脏数据
-        mv "$temp_file" "$DATA_FILE"
-        echo "Error: 未找到ID为 $id 的待办"
-        exit 1
-    elif [[ $found -eq 2 ]]; then
-        # 待办已完成时，不需要写入文件，直接删除临时文件
-        rm "$temp_file"
-    else
-        mv "$temp_file" "$DATA_FILE"
-    fi
+    ) 200>"$DATA_FILE.lock"
 }
 
 # 删除待办

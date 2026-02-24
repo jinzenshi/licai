@@ -112,3 +112,4 @@
 2026-02-25 05:50 | 修改文件: todo.sh,test_add_whitespace.sh | 解决问题: add 拒绝仅空白字符待办，避免生成无效空内容任务；新增回归测试并通过 | 消耗配额: 约1次MiniMax调用
 2026-02-25 05:59 | 修改文件: todo.sh,test_add_newline.sh | 解决问题: add 拒绝包含换行符(\n/\r)的待办内容，防止破坏单行存储格式；新增回归测试并通过 | 消耗配额: 约1次MiniMax调用
 2026-02-25 06:09 | 修改文件: todo.sh,test_concurrent_add.sh | 解决问题: add 在并发下加锁保证取ID+写入原子性，修复重复ID竞态；新增并发测试并通过 | 消耗配额: 约1次MiniMax调用
+2026-02-25 06:14 | 修改文件: todo.sh,test_concurrent_done.sh | 解决问题: done 增加文件锁避免并发写入竞态导致状态丢失；新增并发回归测试并通过 | 消耗配额: 约1次MiniMax调用
